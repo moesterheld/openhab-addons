@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2022 Contributors to the openHAB project
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -27,9 +27,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.FormContentProvider;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.util.Fields;
 import org.openhab.binding.blink.internal.dto.BlinkAccount;
 import org.openhab.binding.blink.internal.dto.BlinkCommandResponse;
 import org.slf4j.Logger;
@@ -50,6 +52,7 @@ import com.google.gson.Gson;
 @NonNullByDefault
 public class BaseBlinkApiService {
 
+    public static final String USER_AGENT = "27.0ANDROID_28373244";
     private final Logger logger = LoggerFactory.getLogger(BaseBlinkApiService.class);
 
     private static final String HEADER_TOKEN_AUTH = "token-auth";
@@ -106,14 +109,20 @@ public class BaseBlinkApiService {
             @Nullable Map<String, String> params, @Nullable String content, boolean json)
             throws InterruptedException, TimeoutException, ExecutionException, IOException {
         final Request request = httpClient.newRequest(url).method(method.toString());
-        if (params != null)
+        if (params != null && !method.equals(HttpMethod.POST))
             params.forEach(request::param);
+        else if (params != null) {
+            Fields fields = new Fields();
+            params.forEach(fields::add);
+            request.content(new FormContentProvider(fields));
+        }
         if (json)
             request.header(HttpHeader.ACCEPT, CONTENT_TYPE_JSON);
         if (token != null)
             request.header(HEADER_TOKEN_AUTH, token);
         if (content != null)
             request.content(new StringContentProvider(content));
+        request.agent(USER_AGENT);
         ContentResponse contentResponse = request.send();
         if (contentResponse.getStatus() != 200) {
             throw new IOException("Blink API Call unsuccessful <Status " + contentResponse.getStatus() + ">");
