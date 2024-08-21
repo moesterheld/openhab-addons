@@ -109,6 +109,14 @@ public class BlinkDiscoveryService extends AbstractDiscoveryService implements T
                     .withRepresentationProperty(PROPERTY_CAMERA_ID);
             thingDiscovered(dr.build());
         });
+        homescreen.doorbells.forEach(camera -> {
+            ThingUID uid = new ThingUID(THING_TYPE_CAMERA, bridgeUID, Long.toString(camera.id));
+            DiscoveryResultBuilder dr = DiscoveryResultBuilder.create(uid).withLabel(camera.name).withBridge(bridgeUID)
+                    .withProperty(PROPERTY_CAMERA_ID, camera.id).withProperty(PROPERTY_NETWORK_ID, camera.network_id)
+                    .withProperty(PROPERTY_CAMERA_TYPE, CameraConfiguration.CameraType.DOORBELL)
+                    .withRepresentationProperty(PROPERTY_CAMERA_ID);
+            thingDiscovered(dr.build());
+        });
         homescreen.networks.forEach(network -> {
             ThingUID uid = new ThingUID(THING_TYPE_NETWORK, bridgeUID, Long.toString(network.id));
             DiscoveryResultBuilder dr = DiscoveryResultBuilder.create(uid).withLabel(network.name).withBridge(bridgeUID)

@@ -29,6 +29,7 @@ public class CameraConfiguration {
     // camera types
     public enum CameraType {
         CAMERA,
+        DOORBELL,
         OWL
     }
 
