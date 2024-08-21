@@ -32,6 +32,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.blink.internal.config.AccountConfiguration;
 import org.openhab.binding.blink.internal.config.CameraConfiguration;
+import org.openhab.binding.blink.internal.config.CameraConfiguration.CameraType;
 import org.openhab.binding.blink.internal.discovery.BlinkDiscoveryService;
 import org.openhab.binding.blink.internal.dto.BlinkAccount;
 import org.openhab.binding.blink.internal.dto.BlinkCamera;
@@ -325,8 +326,7 @@ public class AccountHandler extends BaseBridgeHandler {
         if (devices == null) {
             throw new IOException("No cameras found for account");
         }
-        List<BlinkCamera> cameras = (camera.cameraType == null
-                || camera.cameraType == CameraConfiguration.CameraType.CAMERA) ? devices.cameras : devices.owls;
+        List<BlinkCamera> cameras = getCameras(devices, camera.cameraType);
         if (cameras == null || cameras.isEmpty()) {
             logger.error("Unknown camera {} for account {}", cameraId, blinkAccount.account.account_id);
             throw new IOException("No cameras found for account");
@@ -341,6 +341,17 @@ public class AccountHandler extends BaseBridgeHandler {
             throw new IOException("Unknown camera");
         }
         return foundCameras.get(0);
+    }
+
+    private List<BlinkCamera> getCameras(BlinkHomescreen devices, CameraType cameraType) {
+        switch (cameraType) {
+            case OWL:
+                return devices.owls;
+            case DOORBELL:
+                return devices.doorbells;
+            default:
+                return devices.cameras;
+        }
     }
 
     BlinkNetwork getNetworkState(String networkId, boolean refresh) throws IOException {

@@ -101,6 +101,10 @@ public class CameraHandler extends BaseThingHandler implements EventListener {
                         Long cmdId = cameraService.motionDetection(accountHandler.getBlinkAccount(), config, enable);
                         cameraService.watchCommandStatus(scheduler, accountHandler.getBlinkAccount(), config.networkId,
                                 cmdId, this::asyncCommandFinished);
+                    } else if (config.cameraType == CameraConfiguration.CameraType.DOORBELL) {
+                        String result = cameraService.motionDetectionDoorbell(accountHandler.getBlinkAccount(), config,
+                                enable);
+                        logger.debug("Returned from owl arm/disarm: {}", result); // {"id":200445162,"network_id":5xx2,"state":"done"}
                     } else {
                         String result = cameraService.motionDetectionOwl(accountHandler.getBlinkAccount(), config,
                                 enable);
@@ -115,6 +119,10 @@ public class CameraHandler extends BaseThingHandler implements EventListener {
                         Long cmdId = cameraService.createThumbnail(accountHandler.getBlinkAccount(), config);
                         cameraService.watchCommandStatus(scheduler, accountHandler.getBlinkAccount(), config.networkId,
                                 cmdId, this::setThumbnailFinished);
+                    } else if (config.cameraType == CameraConfiguration.CameraType.DOORBELL) {
+                        String result = cameraService.createThumbnailDoorbell(accountHandler.getBlinkAccount(), config);
+                        setThumbnailFinished(true);
+                        logger.debug("Returned from owl createThumbnail: {}", result); // {"id":200445162,"network_id":5xx2,"command":"thumbnail","state":"new"}
                     } else {
                         String result = cameraService.createThumbnailOwl(accountHandler.getBlinkAccount(), config);
                         setThumbnailFinished(true);
@@ -184,6 +192,12 @@ public class CameraHandler extends BaseThingHandler implements EventListener {
             thingBuilder.withoutChannel(new ChannelUID(this.thing.getUID(), CHANNEL_CAMERA_TEMPERATURE));
             updateThing(thingBuilder.build());
         }
+        if (config.cameraType.equals(CameraConfiguration.CameraType.DOORBELL)) {
+            logger.debug("Removing channels for doorbell");
+            ThingBuilder thingBuilder = editThing();
+            thingBuilder.withoutChannel(new ChannelUID(this.thing.getUID(), CHANNEL_CAMERA_TEMPERATURE));
+            updateThing(thingBuilder.build());
+        }
 
         updateStatus(ThingStatus.ONLINE);
     }
@@ -197,6 +211,9 @@ public class CameraHandler extends BaseThingHandler implements EventListener {
             if (config.cameraType == CameraConfiguration.CameraType.CAMERA) {
                 updateState(CHANNEL_CAMERA_TEMPERATURE,
                         new QuantityType<>(accountHandler.getTemperature(config), ImperialUnits.FAHRENHEIT));
+                updateState(CHANNEL_CAMERA_BATTERY, accountHandler.getBattery(config));
+            }
+            if (config.cameraType == CameraConfiguration.CameraType.DOORBELL) {
                 updateState(CHANNEL_CAMERA_BATTERY, accountHandler.getBattery(config));
             }
             updateState(CHANNEL_CAMERA_MOTIONDETECTION, accountHandler.getMotionDetection(config, false));

@@ -24,5 +24,6 @@ public class BlinkHomescreen {
 
     public List<BlinkNetwork> networks;
     public List<BlinkCamera> cameras;
+    public List<BlinkCamera> doorbells;
     public List<BlinkCamera> owls;
 }

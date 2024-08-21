@@ -62,6 +62,24 @@ public class CameraService extends BaseBlinkApiService {
      * @param enable enable/disable
      * @return blink async command ID
      */
+    public String motionDetectionDoorbell(@Nullable BlinkAccount account, CameraConfiguration camera, boolean enable)
+            throws IOException {
+        if (account == null || account.account == null || camera == null)
+            throw new IllegalArgumentException("Cannot call motion detection api without account or camera");
+        String action = (enable) ? "/enable" : "/disable";
+        String uri = "/api/v1/accounts/" + account.account.account_id + "/networks/" + camera.networkId + "/doorbells/"
+                + camera.cameraId + action;
+        return request(account.account.tier, uri, HttpMethod.POST, account.auth.token, null, null);
+    }
+
+    /**
+     * Call motion detection endpoints do enable/disable motion detection for the given camera.
+     *
+     * @param account blink account
+     * @param camera blink camera
+     * @param enable enable/disable
+     * @return blink async command ID
+     */
     public String motionDetectionOwl(@Nullable BlinkAccount account, @Nullable CameraConfiguration camera,
             boolean enable) throws IOException {
         if (account == null || account.account == null || camera == null)
@@ -87,6 +105,24 @@ public class CameraService extends BaseBlinkApiService {
         BlinkCommand cmd = apiRequest(account.account.tier, uri, HttpMethod.POST, account.auth.token, null,
                 BlinkCommand.class);
         return cmd.id;
+    }
+
+    /**
+     * Call thumbnail endpoint to create a thumbnail for the given camera.
+     *
+     * @param account blink account
+     * @param camera blink camera
+     * @return blink async command ID
+     * @throws IOException
+     */
+    public String createThumbnailDoorbell(@Nullable BlinkAccount account, CameraConfiguration camera)
+            throws IOException {
+        if (account == null || account.account == null || camera == null)
+            throw new IllegalArgumentException("Cannot call thumbnail api without account or camera");
+        String command = "";
+        String uri = "/api/v1/accounts/" + account.account.account_id + "/networks/" + camera.networkId + "/doorbells/"
+                + camera.cameraId + "/thumbnail";
+        return request(account.account.tier, uri, HttpMethod.POST, account.auth.token, null, command);
     }
 
     /**
